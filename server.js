@@ -18,7 +18,8 @@ app.get("/token", async (req, res) => {
       body,
     });
     const data = await r.json();
-    res.json({ access_token: data.access_token, expires_in: data.expires_in });
+    res.json({ data });
+ console.log("Spotify response:", data);
   } catch (err) {
     res.status(500).json({ error: "Failed to refresh token", details: err.message });
   }
