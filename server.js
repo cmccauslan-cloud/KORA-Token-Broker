@@ -104,6 +104,67 @@ app.post("/spotify_pause", async (req, res) => {
 });
 
 // (then paste all the /spotify_play, /spotify_pause, /spotify_resume, etc. routes I showed you)
+// ▶ Resume
+app.post("/spotify_resume", async (req, res) => {
+  const token = await getAccessToken();
+  await fetch("https://api.spotify.com/v1/me/player/play", {
+    method: "PUT",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  res.json({ message: "Playback resumed" });
+});
+
+// ⏭ Skip to next track
+app.post("/spotify_skip", async (req, res) => {
+  const token = await getAccessToken();
+  await fetch("https://api.spotify.com/v1/me/player/next", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  res.json({ message: "Skipped to next track" });
+});
+
+// ⏮ Go to previous track
+app.post("/spotify_previous", async (req, res) => {
+  const token = await getAccessToken();
+  await fetch("https://api.spotify.com/v1/me/player/previous", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  res.json({ message: "Returned to previous track" });
+});
+
+// 🎧 Get current track info
+app.get("/spotify_now_playing", async (req, res) => {
+  const token = await getAccessToken();
+
+  try {
+    const response = await fetch("https://api.spotify.com/v1/me/player/currently-playing", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    // Spotify returns 204 No Content if nothing is playing
+    if (response.status === 204) {
+      return res.json({ message: "Nothing playing right now." });
+    }
+
+    const data = await response.json();
+
+    if (!data?.item) {
+      return res.json({ message: "No track info available." });
+    }
+
+    res.json({
+      track_name: data.item.name,
+      artist_name: data.item.artists.map(a => a.name).join(", "),
+      album_name: data.item.album.name,
+      is_playing: data.is_playing,
+    });
+  } catch (error) {
+    console.error("Error fetching now playing:", error);
+    res.status(500).json({ error: "Failed to get current track info." });
+  }
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Token broker running on port ${PORT}`));
