@@ -2,6 +2,8 @@ import express from "express";
 import fetch from "node-fetch";
 
 const app = express();
+app.use(express.json());
+
 
 // --- Spotify OAuth callback ---
 app.get("/callback", (req, res) => {
